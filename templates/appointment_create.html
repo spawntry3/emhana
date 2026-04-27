@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Новая запись — i-emhana.kz{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4 gap-2">
+            <h2 class="h3 mb-0 text-truncate"><i class="fa-solid fa-plus text-primary me-2"></i>Новая запись</h2>
+            <a href="{% url 'emhana:appointment_list' %}" class="btn btn-outline-secondary btn-mobile-icon flex-shrink-0">
+                <i class="fa-solid fa-arrow-left me-1"></i><span class="btn-mobile-text">К списку</span>
+            </a>
+        </div>
+
+        <form method="post" class="card shadow-sm border-0">
+            {% csrf_token %}
+            <div class="card-body p-4">
+
+                <h5 class="mb-3"><i class="fa-regular fa-user text-primary me-2"></i>Пациент</h5>
+                <p class="text-muted small">Если пациент с таким ИИН уже есть — он будет использован, иначе создан новый.</p>
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-4">
+                        <label for="iin" class="form-label">ИИН *</label>
+                        <input type="text" name="iin" id="iin" class="form-control"
+                               pattern="\d{12}" maxlength="12" inputmode="numeric" required placeholder="12 цифр">
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label for="full_name" class="form-label">ФИО *</label>
+                        <input type="text" name="full_name" id="full_name" class="form-control" required>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label for="phone" class="form-label">Телефон</label>
+                        <input type="tel" name="phone" id="phone" class="form-control" inputmode="tel" placeholder="+7 ...">
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h5 class="mb-3"><i class="fa-solid fa-stethoscope text-primary me-2"></i>Прием</h5>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="doctor_id" class="form-label">Врач *</label>
+                        <select name="doctor_id" id="doctor_id" class="form-select" required>
+                            <option value="" disabled selected>— выберите врача —</option>
+                            {% for d in doctors %}
+                                <option value="{{ d.id }}">
+                                    {{ d.user.get_full_name|default:d.user.username }} — {{ d.specialty }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="date_time" class="form-label">Дата и время *</label>
+                        <input type="datetime-local" name="date_time" id="date_time" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Жалобы / заметки</label>
+                    <textarea name="notes" id="notes" class="form-control" rows="3"
+                              placeholder="Например: головная боль, температура 37.5"></textarea>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white py-3 d-flex flex-column flex-sm-row justify-content-sm-end gap-2">
+                <a href="{% url 'emhana:appointment_list' %}" class="btn btn-outline-secondary order-sm-1">Отмена</a>
+                <button type="submit" class="btn btn-primary order-sm-2">
+                    <i class="fa-solid fa-check me-1"></i>Создать запись
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

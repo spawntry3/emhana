@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Записи — i-emhana.kz{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 gap-2">
+    <div class="text-truncate">
+        <h2 class="h3 mb-0 text-truncate"><i class="fa-solid fa-calendar-check text-primary me-2"></i>Записи на приём</h2>
+        <span class="text-muted small" id="totalCounter">Всего: {{ total_count }}</span>
+    </div>
+    <a href="{% url 'emhana:appointment_create' %}" class="btn btn-primary btn-mobile-icon flex-shrink-0">
+        <i class="fa-solid fa-plus me-1"></i><span class="btn-mobile-text">Новая запись</span>
+    </a>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <form id="filterForm" method="get" class="row g-2 g-md-3 align-items-end">
+            <div class="col-12 col-md-4">
+                <label for="q" class="form-label small text-muted mb-1">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i>Поиск (ИИН или ФИО)
+                </label>
+                <input type="text" name="q" id="q" class="form-control"
+                       value="{{ search_query }}" placeholder="например, 850115 или Ахметов" autocomplete="off" inputmode="search">
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="status" class="form-label small text-muted mb-1">Статус</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">— все —</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if value == selected_status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label for="doctor_id" class="form-label small text-muted mb-1">Врач</label>
+                <select name="doctor_id" id="doctor_id" class="form-select">
+                    <option value="">— все —</option>
+                    {% for d in doctors %}
+                        <option value="{{ d.id }}" {% if selected_doctor == d.id|stringformat:"s" %}selected{% endif %}>
+                            {{ d.user.get_full_name|default:d.user.username }} — {{ d.specialty }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-2 d-flex">
+                <a href="{% url 'emhana:appointment_list' %}" class="btn btn-outline-secondary w-100" title="Сбросить фильтры">
+                    <i class="fa-solid fa-rotate me-1"></i><span>Сброс</span>
+                </a>
+            </div>
+        </form>
+        <div id="searchSpinner" class="small text-muted mt-2 d-none">
+            <i class="fa-solid fa-spinner fa-spin me-1"></i>Поиск...
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="d-none d-md-table-cell">#</th>
+                    <th>Пациент</th>
+                    <th class="d-none d-md-table-cell">ИИН</th>
+                    <th>Врач</th>
+                    <th>Дата и время</th>
+                    <th>Статус</th>
+                    <th class="d-none d-lg-table-cell">Заметки</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsTbody">
+                {% include 'partials/appointment_rows.html' %}
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white py-3" id="paginationContainer">
+        {% include 'partials/appointment_pagination.html' %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const form = document.getElementById('filterForm');
+    const qInput = document.getElementById('q');
+    const statusSelect = document.getElementById('status');
+    const doctorSelect = document.getElementById('doctor_id');
+    const tbody = document.getElementById('appointmentsTbody');
+    const pagBox = document.getElementById('paginationContainer');
+    const totalCounter = document.getElementById('totalCounter');
+    const spinner = document.getElementById('searchSpinner');
+
+    let debounceTimer;
+    let currentPage = 1;
+
+    function buildUrl(page) {
+        const params = new URLSearchParams();
+        if (qInput.value.trim())     params.set('q', qInput.value.trim());
+        if (statusSelect.value)      params.set('status', statusSelect.value);
+        if (doctorSelect.value)      params.set('doctor_id', doctorSelect.value);
+        params.set('page', page);
+        return '?' + params.toString();
+    }
+
+    async function fetchPage(page) {
+        currentPage = page;
+        spinner.classList.remove('d-none');
+        try {
+            const resp = await fetch(buildUrl(page), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const data = await resp.json();
+            tbody.innerHTML = data.rows_html;
+            pagBox.innerHTML = data.pagination_html;
+            totalCounter.textContent = 'Всего: ' + data.total;
+
+            history.replaceState(null, '', buildUrl(page));
+        } catch (e) {
+            console.error('Search error:', e);
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    }
+
+    qInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => fetchPage(1), 300);
+    });
+
+    statusSelect.addEventListener('change', () => fetchPage(1));
+    doctorSelect.addEventListener('change', () => fetchPage(1));
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        fetchPage(1);
+    });
+
+    pagBox.addEventListener('click', function (e) {
+        const link = e.target.closest('a.page-link');
+        if (!link) return;
+        e.preventDefault();
+        const page = parseInt(link.dataset.page, 10);
+        if (page && page !== currentPage) fetchPage(page);
+    });
+})();
+</script>
+{% endblock %}

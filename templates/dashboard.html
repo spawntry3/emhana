@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Дашборд — i-emhana.kz{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 gap-2">
+    <h2 class="h3 mb-0 text-truncate"><i class="fa-solid fa-gauge-high text-primary me-2"></i>Дашборд</h2>
+    <a href="{% url 'emhana:appointment_create' %}" class="btn btn-primary btn-mobile-icon flex-shrink-0">
+        <i class="fa-solid fa-plus me-1"></i><span class="btn-mobile-text">Новая запись</span>
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-4">
+        <div class="card text-white bg-primary h-100 shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <div class="me-3 d-none d-sm-block"><i class="fa-solid fa-users fa-3x opacity-75"></i></div>
+                <div>
+                    <h6 class="card-title mb-1 text-white-50 small">
+                        <i class="fa-solid fa-users me-1 d-sm-none"></i>Всего пациентов
+                    </h6>
+                    <h2 class="display-6 fw-bold mb-0">{{ total_patients }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-lg-4">
+        <div class="card text-white bg-warning h-100 shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <div class="me-3 d-none d-sm-block"><i class="fa-regular fa-clock fa-3x opacity-75"></i></div>
+                <div>
+                    <h6 class="card-title mb-1 text-white-50 small">
+                        <i class="fa-regular fa-clock me-1 d-sm-none"></i>Ожидают приёма
+                    </h6>
+                    <h2 class="display-6 fw-bold mb-0">{{ pending_appointments }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 d-none d-md-block">
+        <div class="card bg-white h-100 shadow-sm border-0">
+            <div class="card-body d-flex align-items-center">
+                <div class="me-3 text-success"><i class="fa-solid fa-calendar-check fa-3x opacity-75"></i></div>
+                <div>
+                    <h6 class="card-title mb-1 text-muted">Период статистики</h6>
+                    <h4 class="fw-bold mb-0" id="periodLabel">{{ dynamics_title }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                <h6 class="mb-0 me-auto">
+                    <i class="fa-solid fa-chart-line text-primary me-2"></i>
+                    <span id="dynamicsTitle">{{ dynamics_title }}</span>
+                </h6>
+                <div class="period-switcher-wrap">
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Период" id="periodSwitcher">
+                        <button type="button" class="btn btn-outline-primary {% if period == '7d' %}active{% endif %}" data-period="7d">7 дней</button>
+                        <button type="button" class="btn btn-outline-primary {% if period == '30d' %}active{% endif %}" data-period="30d">30 дней</button>
+                        <button type="button" class="btn btn-outline-primary {% if period == '6m' %}active{% endif %}" data-period="6m">Полгода</button>
+                        <button type="button" class="btn btn-outline-primary {% if period == '1y' %}active{% endif %}" data-period="1y">Год</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body position-relative">
+                <div id="chartSpinner" class="position-absolute top-50 start-50 translate-middle d-none">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x text-primary"></i>
+                </div>
+                <canvas id="appointmentsChart" height="160"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Статусы приёмов</h5>
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const initialLabels = {{ dates_json|safe }};
+        const initialData = {{ counts_json|safe }};
+
+        const ctx = document.getElementById('appointmentsChart').getContext('2d');
+        const dynamicsChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: initialLabels,
+                datasets: [{
+                    label: 'Количество приёмов',
+                    data: initialData,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#0d6efd'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }
+                }
+            }
+        });
+
+        const switcher = document.getElementById('periodSwitcher');
+        const titleEl = document.getElementById('dynamicsTitle');
+        const spinner = document.getElementById('chartSpinner');
+
+        switcher.addEventListener('click', async function (e) {
+            const btn = e.target.closest('button[data-period]');
+            if (!btn || btn.classList.contains('active')) return;
+
+            switcher.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const period = btn.dataset.period;
+            spinner.classList.remove('d-none');
+            try {
+                const resp = await fetch("{% url 'emhana:dashboard_chart' %}?period=" + period);
+                if (!resp.ok) throw new Error('HTTP ' + resp.status);
+                const data = await resp.json();
+                dynamicsChart.data.labels = data.labels;
+                dynamicsChart.data.datasets[0].data = data.counts;
+                dynamicsChart.update();
+                titleEl.textContent = data.title;
+                const periodLabel = document.getElementById('periodLabel');
+                if (periodLabel) periodLabel.textContent = data.title;
+                history.replaceState(null, '', '?period=' + period);
+            } catch (err) {
+                console.error('Period switch failed:', err);
+            } finally {
+                spinner.classList.add('d-none');
+            }
+        });
+
+        const statusLabels = {{ status_labels_json|safe }};
+        const statusData = {{ status_data_json|safe }};
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    data: statusData,
+                    backgroundColor: ['#ffc107', '#198754', '#6c757d'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

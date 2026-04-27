@@ -1,0 +1,39 @@
+{% for a in appointments %}
+<tr>
+    <td class="text-muted d-none d-md-table-cell">{{ a.id }}</td>
+    <td class="fw-semibold">
+        {{ a.patient.full_name }}
+        <div class="small text-muted d-md-none"><code>{{ a.patient.iin }}</code></div>
+    </td>
+    <td class="d-none d-md-table-cell"><code>{{ a.patient.iin }}</code></td>
+    <td>
+        <div class="text-truncate" style="max-width: 180px;">
+            {{ a.doctor.user.get_full_name|default:a.doctor.user.username }}
+        </div>
+        <div class="small text-muted">{{ a.doctor.specialty }}</div>
+    </td>
+    <td class="text-nowrap">
+        <span class="d-none d-sm-inline">{{ a.date_time|date:"d.m.Y H:i" }}</span>
+        <span class="d-sm-none small">{{ a.date_time|date:"d.m H:i" }}</span>
+    </td>
+    <td>
+        {% if a.status == 'completed' %}
+            <span class="badge bg-success">{{ a.get_status_display }}</span>
+        {% elif a.status == 'pending' %}
+            <span class="badge bg-warning text-dark">{{ a.get_status_display }}</span>
+        {% else %}
+            <span class="badge bg-secondary">{{ a.get_status_display }}</span>
+        {% endif %}
+    </td>
+    <td class="small text-muted text-truncate d-none d-lg-table-cell" style="max-width: 220px;" title="{{ a.notes }}">
+        {{ a.notes|default:"—" }}
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="7" class="text-center text-muted py-5">
+        <i class="fa-regular fa-folder-open fa-2x mb-2 d-block"></i>
+        Записей не найдено
+    </td>
+</tr>
+{% endfor %}

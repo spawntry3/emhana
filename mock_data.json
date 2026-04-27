@@ -1,0 +1,43 @@
+{
+  "patients": [
+    {"iin": "850115300001", "full_name": "Ахметов Азамат Ахметович", "phone": "+7 701 111 22 33"},
+    {"iin": "920520400002", "full_name": "Оспанова Айгерим Сериковна", "phone": "+7 702 222 33 44"},
+    {"iin": "770304500003", "full_name": "Ким Сергей Александрович", "phone": "+7 705 333 44 55"},
+    {"iin": "001212600004", "full_name": "Нурланова Дана Ержановна", "phone": "+7 707 444 55 66"},
+    {"iin": "950808700005", "full_name": "Жаксыбеков Бауыржан", "phone": "+7 708 555 66 77"},
+    {"iin": "880430800006", "full_name": "Ибрагимова Мадина Бахытовна", "phone": "+7 700 666 77 88"}
+  ],
+  "doctors": [
+    {
+      "username": "doc_terapevt",
+      "password": "docpassword123",
+      "first_name": "Алия",
+      "last_name": "Смагулова",
+      "specialty": "Терапевт"
+    },
+    {
+      "username": "doc_kardio",
+      "password": "docpassword123",
+      "first_name": "Ержан",
+      "last_name": "Кенжебеков",
+      "specialty": "Кардиолог"
+    },
+    {
+      "username": "doc_pediatr",
+      "password": "docpassword123",
+      "first_name": "Сауле",
+      "last_name": "Дюсенбаева",
+      "specialty": "Педиатр"
+    }
+  ],
+  "appointments": [
+    {"patient_iin": "850115300001", "doctor_username": "doc_terapevt", "date_time": "2026-04-21T09:00:00+05:00", "status": "completed", "notes": "Первичный осмотр, жалобы на головную боль."},
+    {"patient_iin": "920520400002", "doctor_username": "doc_kardio",   "date_time": "2026-04-22T10:30:00+05:00", "status": "completed", "notes": "ЭКГ, давление 130/85."},
+    {"patient_iin": "770304500003", "doctor_username": "doc_terapevt", "date_time": "2026-04-23T11:00:00+05:00", "status": "cancelled", "notes": "Пациент не явился."},
+    {"patient_iin": "001212600004", "doctor_username": "doc_pediatr",  "date_time": "2026-04-24T14:00:00+05:00", "status": "completed", "notes": "Плановый осмотр ребёнка."},
+    {"patient_iin": "950808700005", "doctor_username": "doc_terapevt", "date_time": "2026-04-25T09:30:00+05:00", "status": "pending",   "notes": "Жалобы на температуру 37.8."},
+    {"patient_iin": "880430800006", "doctor_username": "doc_kardio",   "date_time": "2026-04-26T16:00:00+05:00", "status": "pending",   "notes": "Боль в груди при нагрузке."},
+    {"patient_iin": "850115300001", "doctor_username": "doc_kardio",   "date_time": "2026-04-27T08:30:00+05:00", "status": "pending",   "notes": "Контрольное измерение давления."},
+    {"patient_iin": "920520400002", "doctor_username": "doc_terapevt", "date_time": "2026-04-27T15:00:00+05:00", "status": "pending",   "notes": "Профилактический осмотр."}
+  ]
+}

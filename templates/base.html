@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}i-emhana.kz | Админ Панель{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @media (max-width: 575.98px) {
+            main.container { padding-left: .75rem; padding-right: .75rem; }
+            h2.h3 { font-size: 1.25rem; }
+            .display-6 { font-size: 1.75rem; }
+            .card-body { padding: 1rem; }
+
+            .btn-mobile-icon .btn-mobile-text { display: none; }
+            .btn-mobile-icon i { margin: 0 !important; }
+
+            .pagination { flex-wrap: nowrap; overflow-x: auto; }
+            .pagination .page-link { padding: .35rem .65rem; }
+
+            .period-switcher-wrap { width: 100%; }
+            .period-switcher-wrap .btn-group { width: 100%; }
+            .period-switcher-wrap .btn { font-size: .75rem; padding: .35rem .25rem; }
+        }
+
+        @media (max-width: 360px) {
+            .navbar-brand { font-size: 1rem; }
+            .navbar-brand .brand-text { display: none; }
+        }
+
+        .navbar { position: sticky; top: 0; z-index: 1020; }
+
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, .65);
+            border-bottom: 2px solid transparent;
+            transition: color .15s ease, border-color .15s ease;
+        }
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: rgba(255, 255, 255, .9);
+        }
+        .navbar-dark .navbar-nav .nav-link.active {
+            color: #fff;
+            font-weight: 600;
+            border-bottom-color: #fff;
+        }
+        @media (max-width: 991.98px) {
+            .navbar-dark .navbar-nav .nav-link.active {
+                border-bottom-color: transparent;
+                border-left: 3px solid #fff;
+                padding-left: .75rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    {% if user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold me-auto" href="{% url 'emhana:dashboard' %}">
+                <i class="fa-solid fa-staff-snake me-2"></i><span class="brand-text">i-emhana.kz</span>
+            </a>
+
+            <a href="{% url 'emhana:logout' %}" class="btn btn-danger btn-sm order-lg-last ms-2">
+                <i class="fa-solid fa-right-from-bracket"></i><span class="d-none d-sm-inline ms-1">Выход</span>
+            </a>
+
+            <button class="navbar-toggler ms-2 order-lg-first" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-label="Меню">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navMain">
+                {% with current=request.resolver_match.url_name %}
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 mt-2 mt-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if current == 'dashboard' %}active{% endif %}"
+                           href="{% url 'emhana:dashboard' %}">
+                            <i class="fa-solid fa-chart-line me-1"></i> Дашборд
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current == 'appointment_list' %}active{% endif %}"
+                           href="{% url 'emhana:appointment_list' %}">
+                            <i class="fa-solid fa-calendar-check me-1"></i> Записи
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current == 'appointment_create' %}active{% endif %}"
+                           href="{% url 'emhana:appointment_create' %}">
+                            <i class="fa-solid fa-plus me-1"></i> Новая запись
+                        </a>
+                    </li>
+                </ul>
+                {% endwith %}
+                <span class="navbar-text text-white-50 me-3 d-none d-lg-inline">
+                    <i class="fa-regular fa-user me-1"></i>{{ user.get_full_name|default:user.username }}
+                </span>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main class="container my-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
