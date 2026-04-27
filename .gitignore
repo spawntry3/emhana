@@ -15,7 +15,7 @@ ENV/
 *.sqlite3-journal
 db.sqlite3
 db.sqlite3-journal
-staticfiles/
+emhana/static/
 media/
 local_settings.py
 

@@ -68,11 +68,12 @@ emhana/
 │   ├── views.py             # дашборд, список, создание, AJAX
 │   ├── admin.py
 │   ├── urls.py
+│   ├── templates/           # base, login, dashboard, appointment_*
+│   │   └── partials/        # фрагменты для AJAX
+│   ├── static/              # сюда `collectstatic` складывает CSS/JS (создаётся автоматически)
 │   └── management/commands/
 │       ├── import_json.py
 │       └── seed_fake.py
-├── templates/               # base, login, dashboard, appointment_*
-│   └── partials/            # фрагменты для AJAX
 ├── mock_data.json           # пример данных
 ├── requirements.txt
 ├── .env.example             # шаблон переменных окружения
@@ -192,7 +193,7 @@ server {
     client_max_body_size 10M;
 
     location /static/ {
-        alias /var/www/emhana/staticfiles/;
+        alias /var/www/emhana/emhana/static/;
         expires 30d;
         access_log off;
     }
