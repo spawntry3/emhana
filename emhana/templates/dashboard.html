@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Дашборд — i-emhana.kz{% endblock %}
 
@@ -91,90 +92,14 @@
 {% endblock %}
 
 {% block scripts %}
+<script id="initialDates" type="application/json">{{ dates_json|safe }}</script>
+<script id="initialCounts" type="application/json">{{ counts_json|safe }}</script>
+<script id="statusLabels" type="application/json">{{ status_labels_json|safe }}</script>
+<script id="statusData" type="application/json">{{ status_data_json|safe }}</script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const initialLabels = {{ dates_json|safe }};
-        const initialData = {{ counts_json|safe }};
-
-        const ctx = document.getElementById('appointmentsChart').getContext('2d');
-        const dynamicsChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: initialLabels,
-                datasets: [{
-                    label: 'Количество приёмов',
-                    data: initialData,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#0d6efd'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 } }
-                }
-            }
-        });
-
-        const switcher = document.getElementById('periodSwitcher');
-        const titleEl = document.getElementById('dynamicsTitle');
-        const spinner = document.getElementById('chartSpinner');
-
-        switcher.addEventListener('click', async function (e) {
-            const btn = e.target.closest('button[data-period]');
-            if (!btn || btn.classList.contains('active')) return;
-
-            switcher.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const period = btn.dataset.period;
-            spinner.classList.remove('d-none');
-            try {
-                const resp = await fetch("{% url 'emhana:dashboard_chart' %}?period=" + period);
-                if (!resp.ok) throw new Error('HTTP ' + resp.status);
-                const data = await resp.json();
-                dynamicsChart.data.labels = data.labels;
-                dynamicsChart.data.datasets[0].data = data.counts;
-                dynamicsChart.update();
-                titleEl.textContent = data.title;
-                const periodLabel = document.getElementById('periodLabel');
-                if (periodLabel) periodLabel.textContent = data.title;
-                history.replaceState(null, '', '?period=' + period);
-            } catch (err) {
-                console.error('Period switch failed:', err);
-            } finally {
-                spinner.classList.add('d-none');
-            }
-        });
-
-        const statusLabels = {{ status_labels_json|safe }};
-        const statusData = {{ status_data_json|safe }};
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: statusLabels,
-                datasets: [{
-                    data: statusData,
-                    backgroundColor: ['#ffc107', '#198754', '#6c757d'],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '65%',
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    });
+    window.EMHANA_DASHBOARD_CFG = {
+        chartUrl: "{% url 'emhana:dashboard_chart' %}"
+    };
 </script>
+<script src="{% static 'emhana/js/dashboard.js' %}"></script>
 {% endblock %}

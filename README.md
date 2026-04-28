@@ -70,7 +70,7 @@ emhana/
 │   ├── urls.py
 │   ├── templates/           # base, login, dashboard, appointment_*
 │   │   └── partials/        # фрагменты для AJAX
-│   ├── static/              # сюда `collectstatic` складывает CSS/JS (создаётся автоматически)
+│   ├── static/emhana/       # исходные CSS/JS приложения (коммитятся)
 │   └── management/commands/
 │       ├── import_json.py
 │       └── seed_fake.py
@@ -193,7 +193,7 @@ server {
     client_max_body_size 10M;
 
     location /static/ {
-        alias /var/www/emhana/emhana/static/;
+        alias /var/www/emhana/staticfiles/;
         expires 30d;
         access_log off;
     }

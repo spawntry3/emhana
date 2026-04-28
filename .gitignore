@@ -15,7 +15,8 @@ ENV/
 *.sqlite3-journal
 db.sqlite3
 db.sqlite3-journal
-emhana/static/
+# Собранная collectstatic-ом статика (генерируется на проде)
+staticfiles/
 media/
 local_settings.py
 

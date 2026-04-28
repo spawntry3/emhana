@@ -97,8 +97,10 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-# Куда `collectstatic` собирает все статические файлы (Django, админка, наши)
-STATIC_ROOT = BASE_DIR / 'emhana' / 'static'
+# Исходные статические файлы приложения лежат в emhana/static/emhana/...
+# (находит django.contrib.staticfiles через AppDirectoriesFinder).
+# Сюда `collectstatic` собирает всю статику (Django-админка + наша) для прода.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
