@@ -70,7 +70,7 @@ emhana/
 │   ├── urls.py
 │   ├── templates/           # base, login, dashboard, appointment_*
 │   │   └── partials/        # фрагменты для AJAX
-│   ├── static/emhana/       # исходные CSS/JS приложения (коммитятся)
+│   ├── static/              # исходные CSS/JS приложения (коммитятся)
 │   └── management/commands/
 │       ├── import_json.py
 │       └── seed_fake.py
